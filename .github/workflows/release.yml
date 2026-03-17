@@ -40,17 +40,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@5b4374b04084dc1f9032b52464284b769ac5059e # v4
         with:
           version: 9.15.4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: pnpm
@@ -79,17 +79,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@5b4374b04084dc1f9032b52464284b769ac5059e # v4
         with:
           version: 9.15.4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: pnpm
@@ -105,12 +105,15 @@ jobs:
       - name: Run release script
         env:
           GITHUB_ACTIONS: "true"
+          RELEASE_BUMP: ${{ inputs.bump }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+          RELEASE_DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          args=("${{ inputs.bump }}")
-          if [ "${{ inputs.channel }}" = "canary" ]; then
+          args=("$RELEASE_BUMP")
+          if [ "$RELEASE_CHANNEL" = "canary" ]; then
             args+=("--canary")
           fi
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ "$RELEASE_DRY_RUN" = "true" ]; then
             args+=("--dry-run")
           fi
           ./scripts/release.sh "${args[@]}"
