@@ -34,7 +34,7 @@ RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" &
 FROM base AS production
 WORKDIR /app
 COPY --chown=node:node --from=build /app /app
-RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest opencode-ai \
+RUN npm install --global --omit=dev @anthropic-ai/claude-code@1.0.33 @openai/codex@0.1.2505302106 opencode-ai@0.1.14 \
   && mkdir -p /paperclip \
   && chown node:node /paperclip
 
@@ -47,7 +47,9 @@ ENV NODE_ENV=production \
   PAPERCLIP_INSTANCE_ID=default \
   PAPERCLIP_CONFIG=/paperclip/instances/default/config.json \
   PAPERCLIP_DEPLOYMENT_MODE=authenticated \
-  PAPERCLIP_DEPLOYMENT_EXPOSURE=private
+  PAPERCLIP_DEPLOYMENT_EXPOSURE=private \
+  DO_NOT_TRACK=1 \
+  CLAUDE_CODE_DISABLE_TELEMETRY=1
 
 VOLUME ["/paperclip"]
 EXPOSE 3100

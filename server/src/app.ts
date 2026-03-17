@@ -1,4 +1,5 @@
 import express, { Router, type Request as ExpressRequest } from "express";
+import helmet from "helmet";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -67,7 +68,13 @@ export async function createApp(
 ) {
   const app = express();
 
+  app.use(helmet({
+    contentSecurityPolicy: false,       // managed per-route; enable once CSP policy is tuned
+    crossOriginEmbedderPolicy: false,   // plugins load cross-origin resources
+  }));
+
   app.use(express.json({
+    limit: "1mb",
     verify: (req, _res, buf) => {
       (req as unknown as { rawBody: Buffer }).rawBody = buf;
     },
