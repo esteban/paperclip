@@ -67,7 +67,14 @@ export function deriveAuthTrustedOrigins(config: Config): string[] {
 
 export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?: string[]): BetterAuthInstance {
   const baseUrl = config.authBaseUrlMode === "explicit" ? config.authPublicBaseUrl : undefined;
-  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.PAPERCLIP_AGENT_JWT_SECRET ?? "paperclip-dev-secret";
+  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  if (!secret) {
+    throw new Error(
+      "BETTER_AUTH_SECRET (or PAPERCLIP_AGENT_JWT_SECRET) must be set. " +
+      "The hardcoded fallback has been removed for security. " +
+      "Generate a random secret: openssl rand -base64 32",
+    );
+  }
   const effectiveTrustedOrigins = trustedOrigins ?? deriveAuthTrustedOrigins(config);
 
   const publicUrl = process.env.PAPERCLIP_PUBLIC_URL ?? baseUrl;
@@ -91,14 +98,14 @@ export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?
       requireEmailVerification: false,
       disableSignUp: config.authDisableSignUp,
     },
-    ...(isHttpOnly ? { advanced: { useSecureCookies: false } } : {}),
+    ...(isHttpOnly ? { advanced: { useSecureCookies: false as boolean } } : {}),
   };
 
   if (!baseUrl) {
     delete (authConfig as { baseURL?: string }).baseURL;
   }
 
-  return betterAuth(authConfig);
+  return betterAuth(authConfig) as BetterAuthInstance;
 }
 
 export function createBetterAuthHandler(auth: BetterAuthInstance): RequestHandler {

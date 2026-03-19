@@ -1,4 +1,11 @@
-FROM node:lts-trixie-slim
+# Pin to deterministic major version — floating `lts` tag causes non-reproducible builds
+# and supply-chain risk from unreviewed upstream updates.
+FROM node:22-trixie-slim
+
+LABEL org.opencontainers.image.title="paperclip-untrusted-review" \
+      org.opencontainers.image.description="Sandboxed reviewer — runs untrusted AI agents against submitted PRs" \
+      security.pinned-base="node:22-trixie-slim" \
+      security.pinned-packages="@anthropic-ai/claude-code@1.0.33,@openai/codex@0.1.2505302106"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -18,7 +25,12 @@ RUN apt-get update \
 RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd
 
 RUN corepack enable \
-  && npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest
+  # Versions pinned to match main Dockerfile — @latest is a supply-chain attack surface.
+  # --ignore-scripts prevents postinstall hooks from executing arbitrary code in this
+  # untrusted-review context; these global CLI packages do not require them.
+  && npm install --global --omit=dev --ignore-scripts \
+    @anthropic-ai/claude-code@1.0.33 \
+    @openai/codex@0.1.2505302106
 
 RUN useradd --create-home --shell /bin/bash reviewer
 
